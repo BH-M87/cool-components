@@ -1,3 +1,3 @@
-import List from './List.jsx';
+import List from './List';
 
 export default List;

@@ -45,7 +45,7 @@ class List extends Component {
 
   renderHeader(options, actions) {
     return (
-      <div className={`${cx('header')} ${this.props.headerClassName}`}>
+      <div className={`${cx('header')} ${this.props.options.headerClassName}`}>
         {this.renderHeaderItems(options, actions)}
       </div>
     );
