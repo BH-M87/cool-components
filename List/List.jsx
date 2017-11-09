@@ -10,10 +10,15 @@ const PREFIX = 'list';
 const cx = classnames(PREFIX, styles);
 
 class List extends Component {
-  renderFooter({ totalCount, paginationNo, pageSize, totalNumClassName }, { changePagination }) {
+  renderFooter(
+    { totalCount, paginationNo, pageSize, totalNumClassName },
+    { changePagination }
+  ) {
     return (
       <div className={cx('pagination')}>
-        <div className={cx('total-num')}>共有{totalCount}条</div>
+        <div className={`${cx('total-num')} ${totalNumClassName}`}>
+          共有{totalCount}条
+        </div>
         <Pagination
           current={paginationNo}
           onChange={changePagination}
@@ -26,13 +31,19 @@ class List extends Component {
 
   renderHeaderItems({ cols = [], sortedColumns }, { onSort }) {
     return cols.map(item => (
-      <div key={item.index} className={item.className ? item.className : item.index}>
+      <div
+        key={item.index}
+        className={item.className ? item.className : item.index}
+      >
         {item.text}
         {item.sortable ? (
           <i
             role="button"
             tabIndex="0"
-            className={`fa fa-sort ${_.find(sortedColumns, n => n === item.index)
+            className={`fa fa-sort ${_.find(
+              sortedColumns,
+              n => n === item.index
+            )
               ? cx('sorted-icon')
               : cx('sort-icon')}`}
             onClick={() => onSort(item.index)}
@@ -73,7 +84,9 @@ class List extends Component {
     return dataSource.map((items, index) => (
       <div
         key={index}
-        className={`${cx('row')} ${rowClassName} ${items.detail ? `${cx('row-hover')}` : ''}`}
+        className={`${cx('row')} ${rowClassName} ${items.detail
+          ? `${cx('row-hover')}`
+          : ''}`}
       >
         <div className={cx('items')}>{this.renderBodyItems(items, index)}</div>
         {items.detail ? (
@@ -85,7 +98,9 @@ class List extends Component {
                 <img src={items.detail.imageUrl} alt="" height="100%" />
               </div>
             ) : null}
-            <div className={`${cx('text')} ${items.detail.textClassName}`}>{items.detail.text}</div>
+            <div className={`${cx('text')} ${items.detail.textClassName}`}>
+              {items.detail.text}
+            </div>
           </div>
         ) : null}
       </div>
@@ -120,7 +135,7 @@ class List extends Component {
 
 List.propTypes = {
   data: PropTypes.shape({
-    dataSource: PropTypes.arrayOf(PropTypes.object)
+    dataSource: PropTypes.arrayOf(PropTypes.object),
   }).isRequired,
   options: PropTypes.shape({
     cols: PropTypes.arrayOf(
@@ -129,7 +144,7 @@ List.propTypes = {
         text: PropTypes.string,
         className: PropTypes.string,
         sortable: PropTypes.bool,
-        render: PropTypes.func
+        render: PropTypes.func,
       })
     ),
     totalCount: PropTypes.number,
@@ -141,17 +156,18 @@ List.propTypes = {
     headerClassName: PropTypes.string,
     isPagination: PropTypes.bool,
     showHeader: PropTypes.bool,
-    animation: PropTypes.bool
+    animation: PropTypes.bool,
+    totalNumClassName: PropTypes.string,
   }).isRequired,
   actions: PropTypes.shape({
     onSort: PropTypes.func,
     onFilter: PropTypes.func,
-    changePagination: PropTypes.func
-  })
+    changePagination: PropTypes.func,
+  }),
 };
 
 List.defaultProps = {
-  actions: {}
+  actions: {},
 };
 
 export default List;
