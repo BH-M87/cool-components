@@ -10,6 +10,15 @@ const cx = utils.classnames(PREFIX, styles);
 
 class Img extends Component {
   render() {
+    const altElement = (
+      <div
+        className={cx('alt-element')}
+        style={{ height: this.props.height, width: this.props.width }}
+      >
+        <span>暂无图片</span>
+      </div>
+    );
+
     return (
       <div
         style={this.props.style}
@@ -19,7 +28,7 @@ class Img extends Component {
         <VisibilitySensor>
           <ImgReact
             src={this.props.src}
-            unloader={this.props.altElement}
+            unloader={this.props.altElement || altElement}
             height={this.props.height}
             width={this.props.width}
           />
@@ -44,14 +53,6 @@ Img.defaultProps = {
   height: 104,
   width: 180,
   onClick: () => {},
-  altElement: (
-    <div
-      className={cx('alt-element')}
-      style={{ height: this.props.height, width: this.props.width }}
-    >
-      <span>暂无图片</span>
-    </div>
-  ),
 };
 
 export default Img;
