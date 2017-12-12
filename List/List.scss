@@ -83,7 +83,6 @@ a:active {
     border-top: 1px dotted #4e4e4e;
     height: 72px;
     width: 100%;
-
     .ant-pagination-prev,
     .ant-pagination-next,
     .ant-pagination-item,
@@ -94,13 +93,11 @@ a:active {
         color: #999999;
       }
     }
-
     .ant-pagination-item-active {
       a {
         color: #00c1de !important;
       }
     }
-
     .ant-pagination-jump-prev,
     .ant-pagination-jump-next {
       color: #999999;
@@ -113,5 +110,11 @@ a:active {
     @include font-content-style();
     color: #4a4a4a;
     margin: 0 22px 0 20px;
+  }
+  &total-count,
+  &current {
+    font-size: 16px;
+    color: #2a2a2a;
+    padding: 0 5px;
   }
 }
