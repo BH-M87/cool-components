@@ -1,10 +1,11 @@
-/* global d3, _ */
 /* eslint no-use-before-define: 0 */
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { observable, toJS } from 'mobx';
 import { observer } from 'mobx-react';
+import _ from 'lodash';
+import d3 from 'd3';
 import classnames from 'utils/classnames';
 import StatusLayer from 'components/StatusLayer';
 import styles from './ForceGraph.scss';
@@ -22,42 +23,52 @@ const LINK_DISTANCE = 100;
 @observer
 class ForceGraph extends Component {
   static propTypes = {
-    nodes: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.string,
-      x: PropTypes.number,
-      y: PropTypes.number,
-      vx: PropTypes.number,
-      vy: PropTypes.number,
-      fx: PropTypes.number,
-      fy: PropTypes.number,
-      avatar: PropTypes.string,
-      type: PropTypes.oneOf(['CENTER', 'FEATURE']),
-    })).isRequired,
-    links: PropTypes.arrayOf(PropTypes.shape({
-      source: PropTypes.string,
-      target: PropTypes.string,
-      showArrow: PropTypes.bool,
-    })).isRequired,
+    nodes: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string,
+        x: PropTypes.number,
+        y: PropTypes.number,
+        vx: PropTypes.number,
+        vy: PropTypes.number,
+        fx: PropTypes.number,
+        fy: PropTypes.number,
+        avatar: PropTypes.string,
+        type: PropTypes.oneOf(['CENTER', 'FEATURE']),
+      })
+    ).isRequired,
+    links: PropTypes.arrayOf(
+      PropTypes.shape({
+        source: PropTypes.string,
+        target: PropTypes.string,
+        showArrow: PropTypes.bool,
+      })
+    ).isRequired,
     height: PropTypes.number,
     width: PropTypes.number,
     relationData: PropTypes.shape({
-      points: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.string,
-        name: PropTypes.string,
-        tooltips: PropTypes.shape({
+      points: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.string,
           name: PropTypes.string,
-          weiboAmount: PropTypes.number,
-        }),
-        avatar: PropTypes.string,
-        netizenType: PropTypes.oneOf(['NETIZEN', 'MOBILE', 'EMAIL']),
-        type: PropTypes.oneOf(['CENTER', 'FEATURE']),
-      })),
-      pointRelations: PropTypes.arrayOf(PropTypes.shape({
-        pointSourceId: PropTypes.string,
-        pointTargetId: PropTypes.string,
-        relationTime: PropTypes.string,
-        relations: PropTypes.arrayOf(PropTypes.oneOf(['COMMENTED', 'FOLLOWED'])),
-      })),
+          tooltips: PropTypes.shape({
+            name: PropTypes.string,
+            weiboAmount: PropTypes.number,
+          }),
+          avatar: PropTypes.string,
+          netizenType: PropTypes.oneOf(['NETIZEN', 'MOBILE', 'EMAIL']),
+          type: PropTypes.oneOf(['CENTER', 'FEATURE']),
+        })
+      ),
+      pointRelations: PropTypes.arrayOf(
+        PropTypes.shape({
+          pointSourceId: PropTypes.string,
+          pointTargetId: PropTypes.string,
+          relationTime: PropTypes.string,
+          relations: PropTypes.arrayOf(
+            PropTypes.oneOf(['COMMENTED', 'FOLLOWED'])
+          ),
+        })
+      ),
     }),
     nodeOverlay: PropTypes.func,
     linkOverlay: PropTypes.func,
@@ -69,11 +80,15 @@ class ForceGraph extends Component {
   //   this.draw();
   // }
 
-  componentDidUpdate() {
-    if (this.props.nodes && this.props.nodes.length > 0) {
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.props.nodes &&
+      this.props.nodes.length > 0 &&
+      !_.isEqual(this.props.nodes, prevProps.nodes)
+    ) {
       this.draw();
       this.loadingStatus = 'normal';
-    } else {
+    } else if (!this.props.nodes || this.props.nodes.length === 0) {
       this.loadingStatus = 'empty';
     }
   }
@@ -90,9 +105,7 @@ class ForceGraph extends Component {
     const { width, height } = canvas;
     const context = canvas.getContext('2d');
 
-    const {
-      nodes, links, relationData, nodeOverlay,
-    } = this.props;
+    const { nodes, links, relationData, nodeOverlay } = this.props;
     const centerNodeId = _.find(nodes, { type: 'CENTER' }).id;
 
     const simulation = d3
@@ -105,7 +118,7 @@ class ForceGraph extends Component {
           .forceLink(links)
           .distance(LINK_DISTANCE)
           .strength(1)
-          .id(d => d.id),
+          .id(d => d.id)
       )
       .force('x', d3.forceX())
       .force('y', d3.forceY())
@@ -113,13 +126,15 @@ class ForceGraph extends Component {
 
     d3
       .select(canvas)
-      .call(d3
-        .drag()
-        .container(canvas)
-        .subject(dragsubject)
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended))
+      .call(
+        d3
+          .drag()
+          .container(canvas)
+          .subject(dragsubject)
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended)
+      )
       .on('mousemove', mousemove);
 
     function ticked() {
@@ -183,8 +198,10 @@ class ForceGraph extends Component {
       const diffX = targetX - sourceX;
       const diffY = targetY - sourceY;
       const angle = Math.atan(diffY / diffX);
-      const sourceRadius = sourceId === centerNodeId ? CENTER_AVATAR_SIZE / 2 : AVATAR_SIZE / 2;
-      const targetRadius = targetId === centerNodeId ? CENTER_AVATAR_SIZE / 2 : AVATAR_SIZE / 2;
+      const sourceRadius =
+        sourceId === centerNodeId ? CENTER_AVATAR_SIZE / 2 : AVATAR_SIZE / 2;
+      const targetRadius =
+        targetId === centerNodeId ? CENTER_AVATAR_SIZE / 2 : AVATAR_SIZE / 2;
 
       // const distance = Math.sqrt(Math.pow(diffX, 2) + Math.pow(diffY, 2));
 
@@ -195,7 +212,9 @@ class ForceGraph extends Component {
       const moveToXSource = targetX > sourceX ? sourceRadius : -sourceRadius;
       context.moveTo(moveToXSource, 0);
       const lineToXSource =
-        targetX > sourceX ? sourceRadius + ARROW_HEIGHT : -sourceRadius - ARROW_HEIGHT;
+        targetX > sourceX
+          ? sourceRadius + ARROW_HEIGHT
+          : -sourceRadius - ARROW_HEIGHT;
       context.lineTo(lineToXSource, HALF_ARROW_WIDTH);
       context.lineTo(lineToXSource, -HALF_ARROW_WIDTH);
       context.closePath();
@@ -210,7 +229,9 @@ class ForceGraph extends Component {
       const moveToXTarget = targetX > sourceX ? -targetRadius : targetRadius;
       context.moveTo(moveToXTarget, 0);
       const lineToXTarget =
-        targetX > sourceX ? -targetRadius - ARROW_HEIGHT : targetRadius + ARROW_HEIGHT;
+        targetX > sourceX
+          ? -targetRadius - ARROW_HEIGHT
+          : targetRadius + ARROW_HEIGHT;
       context.lineTo(lineToXTarget, HALF_ARROW_WIDTH);
       context.lineTo(lineToXTarget, -HALF_ARROW_WIDTH);
       context.closePath();
@@ -227,7 +248,13 @@ class ForceGraph extends Component {
       context.arc(d.x, d.y, avatarSize / 2, 0, 2 * Math.PI);
       context.closePath();
       context.clip();
-      context.drawImage(avatar, d.x - avatarSize / 2, d.y - avatarSize / 2, avatarSize, avatarSize);
+      context.drawImage(
+        avatar,
+        d.x - avatarSize / 2,
+        d.y - avatarSize / 2,
+        avatarSize,
+        avatarSize
+      );
       context.restore();
     }
 
@@ -235,7 +262,11 @@ class ForceGraph extends Component {
 
     function mousemove() {
       const mouse = d3.mouse(this);
-      const node = simulation.find(mouse[0] - width / 2, mouse[1] - height / 2, AVATAR_SIZE / 2);
+      const node = simulation.find(
+        mouse[0] - width / 2,
+        mouse[1] - height / 2,
+        AVATAR_SIZE / 2
+      );
       if (node && !nodeOverlayElement) {
         const data = _.find(relationData.points, { id: node.id });
         if (!nodeOverlayElement) {
@@ -245,7 +276,10 @@ class ForceGraph extends Component {
             top: mouse[1],
           });
         }
-        ReactDOM.render(nodeOverlayElement, document.getElementById(cx('node-overlay')));
+        ReactDOM.render(
+          nodeOverlayElement,
+          document.getElementById(cx('node-overlay'))
+        );
       } else if (!node && nodeOverlayElement) {
         nodeOverlayElement = undefined;
         ReactDOM.render(<div />, document.getElementById(cx('node-overlay')));
